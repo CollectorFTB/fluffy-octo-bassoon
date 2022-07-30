@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
+from contextlib import contextmanager
 
 DRIVER: webdriver.Chrome = None
 
@@ -23,7 +24,8 @@ def driver(browser, executable_path) -> webdriver.Chrome:
         DRIVER  = browser(executable_path=executable_path)
         yield DRIVER
     finally:
-        DRIVER.close()
+        if DRIVER:
+            DRIVER.close()
 
 
 def set_cookie(name: str, value: str, domain: str):

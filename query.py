@@ -2,26 +2,41 @@ import json
 import os
 
 QUERY_PATH = 'data/queries.json'
+URL_PATH = 'data/urls.json'
 
+def recurse_tuple(iter):
+    ret = []
+    for elem in iter:
+        if isinstance(elem, list):
+            elem = tuple([tuple(recurse_tuple(x)) if isinstance(x, list) else x for x in elem])
+        ret.append(elem)
+    return ret
 
-def create_query_file(fp: str) -> None:
+def create_data_file(fp: str):
     if not os.path.isfile(fp):
         open(fp, 'w').close()
 
-def load_queries() -> dict:
+def load_queries():
     try:
-        queries = get_queries_from_file(QUERY_PATH)
-    except:
-        create_query_file(QUERY_PATH)
-        queries = {}
-    return queries
+        queries = recurse_tuple([sorted(d) for d in get_data_from_file(QUERY_PATH)])
+        urls = get_data_from_file(URL_PATH)
+    except FileNotFoundError:
+        create_data_file(QUERY_PATH)
+        create_data_file(URL_PATH)
+        queries = []
+        urls = []
 
-def get_queries_from_file(fp) -> dict:
-    with open(fp, 'r') as query_file:
-        query_data =  json.load(query_file.read())
+    return queries, urls
 
-    return query_data
+def get_data_from_file(fp):
+    with open(fp, 'r') as f:
+        data =  json.load(f)
 
-def save_queries(queries):
+    return data
+
+def save_queries(queries, urls):
     with open(QUERY_PATH, 'w') as query_file:
-        query_file.write(json.dump(queries, query_file))
+        json.dump(queries, query_file)
+
+    with open(URL_PATH, 'w') as url_file:
+        json.dump(urls, url_file)

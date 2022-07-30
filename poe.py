@@ -1,10 +1,7 @@
 from contextlib import contextmanager
 from query import load_queries, save_queries
-import pdb
-import time
 import sys
 from selenium.webdriver import Chrome
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
 from driver import *
@@ -29,7 +26,8 @@ class TradeSite:
     FILTER = '//*[@id="trade"]/div[4]/div/div[2]/div/div[1]/div[{}]/div[1]/div/span[1]/button'
     FILTERS = {'type': 1, 'weapon': 2, 'armour' : 3, 'socket': 4, 'requirement': 5, 'map': 6, 'heist': 7, 'sentinel': 8, 'misc': 9}
     
-    QUERIES = {}
+    QUERIES = []
+    URLS = []
 
     @classproperty
     def search_button(cls) -> WebElement:
@@ -52,8 +50,8 @@ class TradeSite:
     @needs_driver
     def search(driver: Chrome, **filters):
         try:
-            cached_url = TradeSite.QUERIES[freeze(filters)]         
-        except KeyError:
+            cached_url = TradeSite.URLS[TradeSite.QUERIES.index(tuple(sorted(filters.items())))]
+        except ValueError:
             cached_url = None
 
         if not cached_url:
@@ -101,10 +99,13 @@ class TradeSite:
         
         wait_for_element('price', By.CLASS_NAME)
         
-        if item:
-            filters['Name'] = item
+        # save the url
+        if not cached_url: 
+            if item:
+                filters['Name'] = item
 
-        TradeSite.QUERIES[freeze(filters)] = driver.current_url
+            TradeSite.QUERIES.append(sorted(filters.items()))
+            TradeSite.URLS.append(driver.current_url)
 
     @staticmethod
     def wait():
@@ -114,20 +115,15 @@ class TradeSite:
     @contextmanager
     def load():
         try:
-            try:
-                POE_SESSION_ID = open('data/session_id.txt').read()
-            except:
-                raise EnvironmentError('Please put your poe session id in data/session_id.txt')
+            POE_SESSION_ID = open('data/session_id.txt', 'r').read()
             set_cookie('POESESSID', POE_SESSION_ID, DOMAIN)
-            TradeSite.QUERIES = load_queries()
+            TradeSite.QUERIES, TradeSite.URLS = load_queries()
+            yield
         finally:
-            save_queries(TradeSite.QUERIES)
+            save_queries(TradeSite.QUERIES, TradeSite.URLS)
         
     @staticmethod
     @needs_driver
     def open_trade(browser: Chrome):
         browser.get(TRADE_URL)
         TradeSite.wait()
-        
-def freeze(d):
-    return tuple(sorted(d.items()))

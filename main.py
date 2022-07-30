@@ -1,13 +1,10 @@
-from http.server import executable
-import os
-from platform import platform
 import sys
 import time
 
 from selenium import webdriver
 
 from driver import driver
-from poe import search_item, TradeSite
+from poe import TradeSite
 
 def main():
     item = {'Name': 'Grace', 'Corrupted': 'No', 'Mirrored': 'No', 'Quality': (1,10)}
@@ -20,10 +17,10 @@ def main():
 if __name__ == '__main__':
     if sys.platform == 'NT':
         browser = webdriver.Chrome
-        executable_path = 'data/chromedriver.exe' 
+        executable_path = './driver/chromedriver.exe' 
     else:
         browser = webdriver.Firefox  
-        executable_path = 'data/geckodriver'
+        executable_path = './driver/geckodriver'
     
     with driver(browser, executable_path):
         main()
