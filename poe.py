@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from query import load_queries, save_queries
 import pdb
 import time
+import sys
 from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
@@ -10,7 +11,6 @@ from driver import *
 from filters import filter_names
 
 DOMAIN = 'pathofexile.com'
-POE_SESSION_ID = open('data/session_id.txt').read()
 
 TRADE_URL = 'https://www.pathofexile.com/trade/search/Sentinel'
 
@@ -114,6 +114,10 @@ class TradeSite:
     @contextmanager
     def load():
         try:
+            try:
+                POE_SESSION_ID = open('data/session_id.txt').read()
+            except:
+                raise EnvironmentError('Please put your poe session id in data/session_id.txt')
             set_cookie('POESESSID', POE_SESSION_ID, DOMAIN)
             TradeSite.QUERIES = load_queries()
         finally:
