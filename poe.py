@@ -10,7 +10,7 @@ from driver import *
 from filters import filter_names
 
 DOMAIN = 'pathofexile.com'
-POE_SESSION_ID = ''
+POE_SESSION_ID = open('data/session_id.txt').read()
 
 TRADE_URL = 'https://www.pathofexile.com/trade/search/Sentinel'
 
