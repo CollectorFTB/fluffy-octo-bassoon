@@ -1,18 +1,29 @@
+from http.server import executable
+import os
+from platform import platform
+import sys
 import time
 
-from driver import init_session, close_session
-from poe import search_item
+from selenium import webdriver
+
+from driver import driver
+from poe import search_item, TradeSite
 
 def main():
-    
-    search_item('Grace', **{'Corrupted': 'No', 'Mirrored': 'No', 'Quality': (1,10)})
-    #@search_item('''Shavronne's Wrappings Occultist's Vestment''')
+    item = {'Name': 'Grace', 'Corrupted': 'No', 'Mirrored': 'No', 'Quality': (1,10)}
 
+    with TradeSite.load():
+        TradeSite.search(**item)
+        print(list(TradeSite.get_listings()))
 
 
 if __name__ == '__main__':
-    try:
-        init_session()
+    if sys.platform == 'NT':
+        browser = webdriver.Chrome
+        executable_path = 'data/chromedriver.exe' 
+    else:
+        browser = webdriver.Firefox  
+        executable_path = 'data/geckodriver'
+    
+    with driver(browser, executable_path):
         main()
-    finally:
-        close_session()

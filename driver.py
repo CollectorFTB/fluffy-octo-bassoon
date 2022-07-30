@@ -16,16 +16,14 @@ def needs_driver(func):
         return func(DRIVER, *args, **kwargs)
     return wrapper
 
-
-def init_session() -> webdriver.Chrome:
+@contextmanager
+def driver(browser, executable_path) -> webdriver.Chrome:
     global DRIVER
-    DRIVER  = webdriver.Chrome()
-    return DRIVER
-
-def close_session():
-    global DRIVER
-    DRIVER.close()
-    DRIVER = None
+    try:
+        DRIVER  = browser(executable_path=executable_path)
+        yield DRIVER
+    finally:
+        DRIVER.close()
 
 
 def set_cookie(name: str, value: str, domain: str):
@@ -58,7 +56,6 @@ def scroll_to_bottom(amount=2):
         time.sleep(0.4)
         DRIVER.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         DRIVER.execute_script("window.scrollTo(0, 0);")
-    
 
 def get_clipboard():
     return clipboard.paste()
